@@ -48,6 +48,14 @@ jobs:
             -v "${ARTIFACTS_DIR}:/artifacts" \
             dovecot-el10-lua-plugins:ci
 
+          # The build container runs as root and will create root-owned files in
+          # the mounted host directory. Fix ownership to the runner user so
+          # future job cleanup doesn't fail with EACCES.
+          docker run --rm \
+            -v "${ARTIFACTS_DIR}:/artifacts" \
+            alpine:3.20 \
+            sh -lc "chown -R $(id -u):$(id -g) /artifacts"
+
       - name: Smoke check artifacts
         shell: bash
         run: |
