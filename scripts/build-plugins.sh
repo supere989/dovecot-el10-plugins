@@ -160,10 +160,18 @@ PY
 
     # Build Lua components from the top-level so cross-directory dependencies can
     # be built (e.g., src/lib-lua depends on src/lib-dict/libdict_lua.la).
-    make -C "${BUILD_DIR}" \
-      src/lib-lua/libdovecot-lua.la \
-      src/lib-storage/libdovecot-storage-lua.la \
+    lua_targets=(
+      src/lib-lua/libdovecot-lua.la
+      src/lib-storage/libdovecot-storage-lua.la
       src/plugins/mail-lua/lib01_mail_lua_plugin.la
+    )
+    for t in "${lua_targets[@]}"; do
+      if make -C "${BUILD_DIR}" -n "${t}" >/dev/null 2>&1; then
+        make -C "${BUILD_DIR}" "${t}"
+      else
+        echo "Skipping make target (no rule): ${t}"
+      fi
+    done
   fi
 
   BUILDROOT_DIR="$(find "${TOPDIR}/BUILDROOT" -maxdepth 1 -type d -name 'dovecot-*' | head -n 1)"
