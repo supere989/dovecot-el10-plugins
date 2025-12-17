@@ -1,2 +1,9 @@
 artifacts/
+artifacts-backups/
 src/
+*.rpm
+*.src.rpm
+*.srpm
+*.log
+config.log
+rpmbuild/
