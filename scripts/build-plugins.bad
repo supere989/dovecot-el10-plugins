@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOVECOT_NVR="${DOVECOT_NVR:-dovecot-2.3.21-16.el10}"
+
+# Where to put sources inside the container
+SRC_DIR="${SRC_DIR:-/work/src/dovecot}"
+
+# Where to write compiled plugin .so files
+ARTIFACT_DIR="${ARTIFACT_DIR:-/artifacts/plugins}"
+
+TOPDIR="${TOPDIR:-/work/rpmbuild}"
+SRPM_DIR="${SRPM_DIR:-/work/srpms}"
+
+echo "Using Dovecot NVR: ${DOVECOT_NVR}"
+
+echo "Preparing rpmbuild dirs"
+rm -rf "${TOPDIR}" "${SRPM_DIR}"
+mkdir -p "${TOPDIR}" "${SRPM_DIR}" "${ARTIFACT_DIR}"
+
+dnf -y download --source --destdir "${SRPM_DIR}" "${DOVECOT_NVR}"
+SRPM_PATH="$(ls -1 "${SRPM_DIR}"/*.src.rpm | head -n 1)"
+
+rpm -i --define "_topdir ${TOPDIR}" "${SRPM_PATH}"
+SPEC="$(ls -1 "${TOPDIR}"/SPECS/*.spec | head -n 1)"
+
+if ! grep -qE '^BuildRequires:.*lua-devel' "${SPEC}"; then
+  sed -i '0,/^BuildRequires:/s//&\nBuildRequires: lua\nBuildRequires: lua-devel\nBuildRequires: lua-libs/' "${SPEC}"
+fi
+
+sed -i 's/--with-lua=no/--with-lua/g; s/--without-lua/--with-lua/g' "${SPEC}"
+if ! grep -q -- '--with-lua' "${SPEC}"; then
+  sed -i 's/%configure/%configure --with-lua/' "${SPEC}"
+fi
+
+dnf -y builddep "${SPEC}"
+
+rpmbuild \
+  --define "_topdir ${TOPDIR}" \
+  --nocheck \
+  -bc "${SPEC}"
+
+BUILD_DIR="$(ls -1d "${TOPDIR}"/BUILD/dovecot-* | head -n 1)"
+
+if [[ ! -d "${BUILD_DIR}" ]]; then
+  echo "No BUILD dir created by SRPM build" >&2
+  exit 1
+fi
+
+DLUA_COMPAT_C="${BUILD_DIR}/src/lib-lua/dlua-compat.c"
+if [[ -f "${DLUA_COMPAT_C}" ]]; then
+  if ! grep -qE '^#define HAVE_LUA_ISINTEGER\b' "${DLUA_COMPAT_C}"; then
+    sed -i '0,/^#include "dlua-script-private.h"/s//&\
+\
+#if LUA_VERSION_NUM >= 503\
+#define HAVE_LUA_ISINTEGER 1\
+#endif\
+#if LUA_VERSION_NUM >= 502\
+#define HAVE_LUA_TOINTEGERX 1\
+#endif\
+/' "${DLUA_COMPAT_C}"
+  fi
+fi
+
+read -r RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE < <(rpm -qp --qf '%{NAME} %{VERSION} %{RELEASE}\n' "${SRPM_PATH}")
+export RPM_PACKAGE_NAME
+export RPM_PACKAGE_VERSION
+export RPM_PACKAGE_RELEASE
+
+export RPM_ARCH="$(rpm --eval '%{_arch}')"
+export RPM_OS="$(rpm --eval '%{_os}')"
+
+make -C "${BUILD_DIR}/src/lib-lua" libdovecot-lua.la LIBS="-llua"
+make -C "${BUILD_DIR}/src/lib-storage" libdovecot-storage-lua.la
+
+make -C "${BUILD_DIR}/src/plugins/mail-lua" clean || true
+make -C "${BUILD_DIR}/src/plugins/push-notification" clean || true
+
+# The build flags from the SRPM include --as-needed, and dovecot plugin modules allow
+# undefined symbols at link time. That combination can cause libdovecot-lua to be
+# dropped from DT_NEEDED even though it provides runtime dlua_* symbols.
+# Force --no-as-needed for this link step so libdovecot-lua stays as a dependency.
+make -C "${BUILD_DIR}/src/plugins/mail-lua" lib01_mail_lua_plugin.la \
+  LDFLAGS="-Wl,--no-as-needed" \
+  LIBS="../../lib-lua/libdovecot-lua.la -llua"
+make -C "${BUILD_DIR}/src/plugins/push-notification" lib20_push_notification_plugin.la \
+  LDFLAGS="-Wl,--no-as-needed" \
+  LIBS="../../lib-lua/libdovecot-lua.la -llua"
+
+shopt -s nullglob
+mail_candidates=("${BUILD_DIR}"/src/plugins/mail-lua/.libs/*mail*lua*plugin.so*)
+push_candidates=("${BUILD_DIR}"/src/plugins/push-notification/.libs/*push_notification*plugin.so*)
+
+if (( ${#mail_candidates[@]} == 0 )) || (( ${#push_candidates[@]} == 0 )); then
+  echo "Missing one or more expected plugin artifacts" >&2
+  ls -la "${BUILD_DIR}/src/plugins/mail-lua/.libs" || true
+  ls -la "${BUILD_DIR}/src/plugins/push-notification/.libs" || true
+  exit 1
+fi
+
+cp -a --no-preserve=ownership "${mail_candidates[0]}" "${ARTIFACT_DIR}/"
+cp -a --no-preserve=ownership "${push_candidates[0]}" "${ARTIFACT_DIR}/"
+
+lua_helper_lib_candidates=("${BUILD_DIR}"/src/lib-lua/.libs/libdovecot-lua.so*)
+if (( ${#lua_helper_lib_candidates[@]} == 0 )); then
+  echo "Missing libdovecot-lua.so* helper library artifacts" >&2
+  ls -la "${BUILD_DIR}/src/lib-lua/.libs" || true
+  exit 1
+fi
+
+cp -a --no-preserve=ownership "${lua_helper_lib_candidates[@]}" "${ARTIFACT_DIR}/"
+
+echo
+echo "Artifacts written to: ${ARTIFACT_DIR}"
+ls -la "${ARTIFACT_DIR}" || true
+
+echo
+cat <<'NOTE'
+IMPORTANT:
+- These plugin .so files must match the exact Dovecot ABI/version on the target host.
+- If the host updates dovecot, you must rebuild these plugins.
+
+This repo also supports building an RPM that installs ONLY the plugin .so files.
+See scripts/build-rpm.sh.
+NOTE
