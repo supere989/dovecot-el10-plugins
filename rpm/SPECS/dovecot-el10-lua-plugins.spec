@@ -36,7 +36,7 @@ if ls %{_sourcedir}/plugins/*lua*.so* >/dev/null 2>&1; then
 fi
 cp -a %{_sourcedir}/plugins/*push_notification*plugin.so %{buildroot}/usr/lib64/dovecot/lua-plugins/
 
-FILELIST=%{buildroot}/dovecot-el10-lua-plugins.files
+FILELIST=dovecot-el10-lua-plugins.files
 : > ${FILELIST}
 if [ -d %{buildroot}/usr/lib64/dovecot ]; then
   find %{buildroot}/usr/lib64/dovecot -maxdepth 1 -type f -name '*lua*.so*' -printf '/usr/lib64/dovecot/%f\n' >> ${FILELIST} || true
