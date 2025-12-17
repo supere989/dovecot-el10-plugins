@@ -39,22 +39,46 @@ sed -r -i '/^[[:space:]]*\.\/configure/ { /--with-lua/! s|(^[[:space:]]*\.\/conf
 
 SPEC_PATH="${SPEC}" python3 - <<'PY'
 import os
-import re
 from pathlib import Path
 
 p = Path(os.environ["SPEC_PATH"])
 s = p.read_text(errors="ignore")
 
 # EL/RHEL SRPMs sometimes gate Lua behind a Fedora-only conditional.
-# Unwrap the conditional so --with-lua=plugin is actually passed on EL10.
-s2 = re.sub(
-    r"%if\s+%\{\?rhel\}0\s*==\s*0\s*\n(\s*--with-lua=plugin\s*\\\\\s*\n)%endif\s*\n",
-    r"\1",
-    s,
-    flags=re.M,
-)
+# Unwrap ONLY lua-related lines out of those blocks so we don't accidentally
+# enable other Fedora-only BuildRequires.
+lines = s.splitlines(keepends=True)
+out = []
+i = 0
+while i < len(lines):
+    line = lines[i]
+    if line.lstrip().startswith('%if') and '%{?rhel}0' in line and '== 0' in line:
+        block = [line]
+        i += 1
+        while i < len(lines):
+            block.append(lines[i])
+            if lines[i].lstrip().startswith('%endif'):
+                i += 1
+                break
+            i += 1
 
-p.write_text(s2)
+        body_lines = block[1:-1] if len(block) >= 3 else []
+        lua_lines = [l for l in body_lines if 'lua' in l.lower()]
+        other_lines = [l for l in body_lines if 'lua' not in l.lower()]
+
+        if lua_lines:
+            out.extend(lua_lines)
+            if other_lines:
+                out.append(block[0])
+                out.extend(other_lines)
+                out.append(block[-1])
+        else:
+            out.extend(block)
+        continue
+    out.append(line)
+    i += 1
+
+p.write_text(''.join(out))
 PY
 
 mkdir -p /artifacts
