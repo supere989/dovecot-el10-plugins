@@ -1,0 +1,75 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64, docker]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner info
+        shell: bash
+        run: |
+          set -euo pipefail
+          uname -a
+          id
+          docker version
+          docker info
+
+      - name: Build Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -t dovecot-el10-lua-plugins:ci .
+
+      - name: Build artifacts in container
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf artifacts
+          mkdir -p artifacts
+
+          docker run --rm \
+            -v "${PWD}/artifacts:/artifacts" \
+            dovecot-el10-lua-plugins:ci
+
+      - name: Smoke check artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d artifacts || (echo "Missing artifacts/" >&2; exit 1)
+
+          echo "==artifacts tree=="
+          find artifacts -maxdepth 3 -type f -print | sort | sed -n '1,200p'
+
+          test -d artifacts/plugins || (echo "Missing artifacts/plugins" >&2; exit 1)
+
+          echo "==plugins listing=="
+          ls -la artifacts/plugins || true
+
+          # Expect Lua + push-notification related .so outputs
+          find artifacts/plugins -maxdepth 1 -type f -name '*push_notification*plugin.so*' | grep -q . \
+            || (echo "Missing push_notification plugin artifact" >&2; exit 1)
+          find artifacts/plugins -maxdepth 1 -type f -name '*mail*lua*plugin.so*' | grep -q . \
+            || (echo "Missing mail_lua plugin artifact" >&2; exit 1)
+          find artifacts/plugins -maxdepth 1 -type f \( -name 'libdovecot-lua.so*' -o -name '*lua*.so*' \) | grep -q . \
+            || (echo "Missing libdovecot-lua / lua .so artifact" >&2; exit 1)
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: artifacts/
+          if-no-files-found: error
