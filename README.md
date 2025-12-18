@@ -1,23 +1,38 @@
-# dovecot-el10-lua-plugins
+# dovecot-el10-plugins
 
-This repository provides a Docker-based AlmaLinux 10 (EL10) build environment to compile Dovecot Lua-related plugin modules needed by Chatmail's Dovecot push-notification Lua handler.
+Build and publish AlmaLinux 10 / EL10-compatible Dovecot plugin artifacts (Lua + push notification support) as an installable RPM.
 
-## Why
+This exists because the stock EL10 Dovecot build may not ship the Lua-related modules required by deployments that enable Lua + push notification integrations.
 
-On EL10, the distro Dovecot build may not ship the Lua plugin modules required by Chatmail:
+## What this project produces
 
-- `mail_lua`
-- `push_notification_lua`
+- A built RPM:
+  - `dovecot-el10-lua-plugins-*.rpm`
+- Plugin shared objects (for inspection/debugging):
+  - `lib20_push_notification_plugin.so`
+  - Lua-related plugin/module `.so` files (e.g. mail-lua / libdovecot-lua)
+- Build provenance artifacts:
+  - `dovecot.srpm.patched.spec`
+  - `dovecot.config.log`
 
-Chatmail config enables these plugins for LMTP, so missing modules can break LMTP delivery.
+## Releases
 
-## What this repo does
+This repo publishes build outputs via **GitHub Releases**.
 
-- Builds Dovecot source (default: `release-2.3.21`)
-- Compiles the plugin `.so` files
-- Writes the plugin artifacts to `/artifacts/plugins` inside the container
+- Push tags like `v1.0.0` to create a release.
+- Release assets include the RPM and the extracted `.so` files.
 
-## Build
+## Install (from a Release)
+
+Download the RPM from the GitHub Release page and install it on your EL10 host:
+
+```bash
+sudo dnf install -y ./dovecot-el10-lua-plugins-*.rpm
+```
+
+After installation, the plugin modules will be under Dovecot’s module directory (typically `/usr/lib64/dovecot/`).
+
+## Build locally
 
 From this repo directory:
 
@@ -30,14 +45,10 @@ docker run --rm -v "$PWD/artifacts:/artifacts" dovecot-el10-lua-plugins
 Artifacts will appear under:
 
 - `./artifacts/plugins/`
+- `./artifacts/rpms/`
 
-## Deployment note
+## Versioning and compatibility
 
-These `.so` plugin modules are **ABI-sensitive**.
-
-- They must match the **exact Dovecot version/ABI** on the target server.
-- If you update `dovecot` on the server, you typically must rebuild the plugins.
-
-## Next steps
-
-- Build a full Dovecot SRPM rebuild for EL10 with Lua enabled.
+- The repo uses semantic version tags (e.g. `v1.0.0`) to version the build pipeline and packaging.
+- The produced `.so` modules are **ABI-sensitive** and must match the **exact Dovecot version/ABI** on the target server.
+- If you update `dovecot` on the server, you should rebuild and reinstall the plugins.
