@@ -1,26 +1,20 @@
 # dovecot-el10-plugins
 
-Build and publish AlmaLinux 10 / EL10-compatible Dovecot plugin artifacts (Lua + push notification support) as an installable RPM.
+Builds and publishes EL10-compatible Dovecot Lua + push-notification plugin modules as an installable RPM.
 
-This exists because the stock EL10 Dovecot build may not ship the Lua-related modules required by deployments that enable Lua + push notification integrations.
+This repo is intended for deployments that enable Lua-related plugins but don’t get the required modules from the stock EL10 Dovecot packages.
 
-## What this project produces
+## What you get
 
-- A built RPM:
-  - `dovecot-el10-lua-plugins-*.rpm`
-- Plugin shared objects (for inspection/debugging):
-  - `lib20_push_notification_plugin.so`
-  - Lua-related plugin/module `.so` files (e.g. mail-lua / libdovecot-lua)
-- Build provenance artifacts:
-  - `dovecot.srpm.patched.spec`
-  - `dovecot.config.log`
+- `dovecot-el10-lua-plugins-*.rpm`
+- Dovecot plugin `.so` modules (also attached to Releases for inspection)
 
 ## Releases
 
 This repo publishes build outputs via **GitHub Releases**.
 
-- Push tags like `v1.0.0` to create a release.
-- Release assets include the RPM and the extracted `.so` files.
+- Push a tag like `v1.0.0`.
+- The workflow builds in an AlmaLinux 10 container and attaches artifacts to the Release.
 
 ## Install (from a Release)
 
@@ -50,5 +44,5 @@ Artifacts will appear under:
 ## Versioning and compatibility
 
 - The repo uses semantic version tags (e.g. `v1.0.0`) to version the build pipeline and packaging.
-- The produced `.so` modules are **ABI-sensitive** and must match the **exact Dovecot version/ABI** on the target server.
-- If you update `dovecot` on the server, you should rebuild and reinstall the plugins.
+- The plugin modules are **ABI-sensitive** and must match the **exact Dovecot version/ABI** installed on the target server.
+- If you update `dovecot` on the server, rebuild and reinstall.
