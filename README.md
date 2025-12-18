@@ -13,8 +13,7 @@ This repo is intended for deployments that enable Lua-related plugins but don’
 
 This repo publishes build outputs via **GitHub Releases**.
 
-- Push a tag like `v1.0.0`.
-- The workflow builds in an AlmaLinux 10 container and attaches artifacts to the Release.
+Releases are created automatically when pushing a `v*` tag (e.g. `v1.0.0`).
 
 ## Install (from a Release)
 
