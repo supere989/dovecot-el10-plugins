@@ -2,96 +2,133 @@ name: build
 
 on:
   workflow_dispatch:
+    inputs:
+      dovecot_nvr:
+        description: 'Dovecot NVR to build against (e.g. dovecot-2.3.21-16.el10). Leave blank to auto-detect.'
+        required: false
+        default: ''
   push:
     branches:
       - main
     tags:
-      - 'v*'
+      - 'dovecot-*'
   pull_request:
+  schedule:
+    - cron: '0 3 * * *'
 
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  detect-version:
+    runs-on: ubuntu-latest
+    outputs:
+      dovecot_nvr: ${{ steps.detect.outputs.dovecot_nvr }}
+      tag: ${{ steps.detect.outputs.tag }}
+      should_build: ${{ steps.detect.outputs.should_build }}
+    steps:
+      - name: Detect Dovecot NVR
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${{ github.event.inputs.dovecot_nvr }}" ]]; then
+            NVR="${{ github.event.inputs.dovecot_nvr }}"
+          elif [[ "${{ github.ref }}" == refs/tags/dovecot-* ]]; then
+            NVR="${{ github.ref_name }}"
+            NVR="${NVR#dovecot-}"
+          else
+            echo "Querying AlmaLinux 10 appstream for current Dovecot version..."
+            RAW=$(docker run --rm almalinux:10 bash -c \
+              "dnf -q list dovecot 2>/dev/null | awk 'NR>1{print \$2}' | head -1")
+            # RAW looks like "1:2.3.21-16.el10_1.1" — strip epoch
+            NVR="dovecot-$(echo "${RAW}" | sed 's/^[0-9]*://')"
+            echo "Detected: ${NVR}"
+          fi
+
+          TAG="dovecot-${NVR#dovecot-}"
+          echo "dovecot_nvr=${NVR}" | tee -a "${GITHUB_OUTPUT}"
+          echo "tag=${TAG}"         | tee -a "${GITHUB_OUTPUT}"
+
+          # On scheduled runs, skip if a release for this exact tag already exists
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
+            if [[ "${STATUS}" == "200" ]]; then
+              echo "Release ${TAG} already exists — skipping."
+              echo "should_build=false" | tee -a "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+          fi
+          echo "should_build=true" | tee -a "${GITHUB_OUTPUT}"
+
   build:
-    runs-on: [self-hosted, linux, x64, docker]
+    needs: detect-version
+    if: needs.detect-version.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          clean: false
 
       - name: Show runner info
-        shell: bash
         run: |
-          set -euo pipefail
           uname -a
-          id
           docker version
-          docker info
 
       - name: Build Docker image
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker build -t dovecot-el10-lua-plugins:ci .
+        run: docker build -t dovecot-el10-lua-plugins:ci .
 
       - name: Build artifacts in container
-        shell: bash
         run: |
           set -euo pipefail
           ARTIFACTS_DIR="${RUNNER_TEMP}/artifacts"
-          rm -rf "${ARTIFACTS_DIR}"
           mkdir -p "${ARTIFACTS_DIR}"
 
           docker run --rm \
+            -e "DOVECOT_NVR=${{ needs.detect-version.outputs.dovecot_nvr }}" \
             -v "${ARTIFACTS_DIR}:/artifacts" \
             dovecot-el10-lua-plugins:ci
 
-          # The build container runs as root and will create root-owned files in
-          # the mounted host directory. Fix ownership to the runner user so
-          # future job cleanup doesn't fail with EACCES.
-          docker run --rm \
-            -v "${ARTIFACTS_DIR}:/artifacts" \
-            alpine:3.20 \
-            sh -lc "chown -R $(id -u):$(id -g) /artifacts"
+          sudo chown -R "$(id -u):$(id -g)" "${ARTIFACTS_DIR}"
 
       - name: Smoke check artifacts
-        shell: bash
         run: |
           set -euo pipefail
           ARTIFACTS_DIR="${RUNNER_TEMP}/artifacts"
-          test -d "${ARTIFACTS_DIR}" || (echo "Missing artifacts dir: ${ARTIFACTS_DIR}" >&2; exit 1)
 
-          echo "==artifacts tree=="
-          find "${ARTIFACTS_DIR}" -maxdepth 3 -type f -print | sort | sed -n '1,200p'
+          echo "== artifacts =="
+          find "${ARTIFACTS_DIR}" -maxdepth 4 -type f | sort
 
-          test -d "${ARTIFACTS_DIR}/plugins" || (echo "Missing ${ARTIFACTS_DIR}/plugins" >&2; exit 1)
-
-          echo "==plugins listing=="
-          ls -la "${ARTIFACTS_DIR}/plugins" || true
-
-          # Expect Lua + push-notification related .so outputs
-          find "${ARTIFACTS_DIR}/plugins" -maxdepth 1 -type f -name '*push_notification*plugin.so*' | grep -q . \
-            || (echo "Missing push_notification plugin artifact" >&2; exit 1)
-          find "${ARTIFACTS_DIR}/plugins" -maxdepth 1 -type f -name '*mail*lua*plugin.so*' | grep -q . \
-            || (echo "Missing mail_lua plugin artifact" >&2; exit 1)
-          find "${ARTIFACTS_DIR}/plugins" -maxdepth 1 -type f \( -name 'libdovecot-lua.so*' -o -name '*lua*.so*' \) | grep -q . \
-            || (echo "Missing libdovecot-lua / lua .so artifact" >&2; exit 1)
+          find "${ARTIFACTS_DIR}" -name '*push_notification*plugin.so*' | grep -q . \
+            || { echo "Missing push_notification plugin" >&2; exit 1; }
+          find "${ARTIFACTS_DIR}" -name '*mail*lua*plugin.so*' | grep -q . \
+            || { echo "Missing mail_lua plugin" >&2; exit 1; }
+          find "${ARTIFACTS_DIR}" -name 'libdovecot-lua.so*' | grep -q . \
+            || { echo "Missing libdovecot-lua" >&2; exit 1; }
+          find "${ARTIFACTS_DIR}" -name '*.rpm' | grep -q . \
+            || { echo "Missing RPM" >&2; exit 1; }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+        if: always()
         with:
           name: artifacts
           path: ${{ runner.temp }}/artifacts/
           if-no-files-found: error
 
   release:
-    needs: build
-    if: ${{ startsWith(github.ref, 'refs/tags/') && needs.build.result == 'success' }}
+    needs: [detect-version, build]
+    if: >
+      needs.build.result == 'success' && (
+        startsWith(github.ref, 'refs/tags/dovecot-') ||
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -106,5 +143,15 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.detect-version.outputs.tag }}
+          name: ${{ needs.detect-version.outputs.tag }}
+          body: |
+            Dovecot Lua + push-notification plugins built against `${{ needs.detect-version.outputs.dovecot_nvr }}` on AlmaLinux 10.
+
+            **Install on delta:**
+            ```bash
+            sudo /usr/local/bin/dovecot-upgrade.sh
+            ```
           files: |
-            artifacts/**/*
+            artifacts/rpms/*.rpm
+            artifacts/plugins/*.so*
