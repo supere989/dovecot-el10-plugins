@@ -137,3 +137,7 @@ summaries; Audit retains unknown discoveries, failures and source diffs; Map
 connects source evidence → private candidate → native build → real regression →
 security audit → explicit promotion. Distribute is not applicable: selection
 and bounded retry policy are deterministic.
+
+Draft pull requests skip the candidate jobs, including artifact uploads. Marking
+a draft ready for review triggers the normal checks. This keeps draft source
+publication separate from candidate-artifact publication.

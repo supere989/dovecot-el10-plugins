@@ -2,7 +2,8 @@
 
 All execution used task-specific rootless containers. Production services,
 mailboxes, configuration, secrets, timers and unrelated workloads were not
-changed. No commit, push, tag, release or real message was produced.
+changed. Qualification produced no commit, push, tag, release or real message;
+source publication is a separately reviewed step.
 
 The feature-complete upstream 2.4.5 core/Pigeonhole/Lua build requires PCRE2 and
 passed 162/162 core Automake programs and 651 Pigeonhole svtests across 133

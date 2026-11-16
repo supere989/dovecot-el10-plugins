@@ -6,6 +6,7 @@ on:
         description: 'Reviewed relay integration commit (40 hex); never a branch or shell expression'
         required: false
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     - cron: '35 3 * * *'
 permissions:
@@ -15,6 +16,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   candidate:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
