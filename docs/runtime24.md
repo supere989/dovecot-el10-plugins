@@ -126,8 +126,8 @@ version substitution cannot grant promotion.
 
 Cross-repository integration uses a required, exact 40-hex `relay_oid` input or
 `CHATMAIL_RUNTIME_RELAY_OID` repository variable. Configure it only after the
-reviewed relay integration branch is published. Neither repository has been
-published by this work. If the OID is absent, native build evidence is retained,
+reviewed relay integration branch is published. If the OID is absent, native
+build evidence is retained,
 integration is explicitly unknown, and the workflow fails qualification. There
 is no fallback to a branch or to upstream 1.13 sources lacking the new profile.
 

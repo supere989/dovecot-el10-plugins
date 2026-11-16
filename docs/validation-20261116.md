@@ -77,7 +77,8 @@ private hashed candidate source workspace and diff were generated. That intake
 receipt truthfully remains detected=true, built=false, tested=false,
 promoted=false. The full owning-profile build/runtime evidence above is
 separate. Scheduled cross-repository CI requires publication/configuration of
-an explicitly reviewed relay integration OID; no publication was performed.
+an explicitly reviewed relay integration OID. The discovery run published no
+source or artifacts.
 
 SAI evidence is separate for each function. Observe uses existing JSON counters,
 job summaries and explicit exit results at source/build/package/runtime seams.
