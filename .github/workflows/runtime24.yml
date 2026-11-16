@@ -1,0 +1,103 @@
+name: upstream-runtime-candidate
+on:
+  workflow_dispatch:
+    inputs:
+      relay_oid:
+        description: 'Reviewed relay integration commit (40 hex); never a branch or shell expression'
+        required: false
+  pull_request:
+  schedule:
+    - cron: '35 3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: upstream-runtime-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare exact toolchain and signed native test dependencies
+        run: |
+          docker build -t chatmail-alma-candidate .
+          docker build --build-arg BASE=chatmail-alma-candidate -f Dockerfile.runtime -t chatmail-runtime-toolchain .
+          mkdir -p "$RUNNER_TEMP/intake" "$RUNNER_TEMP/runtime" "$RUNNER_TEMP/work"
+      - name: Contracts
+        run: |
+          docker run --rm --network none --cpus 8 --memory 12g \
+            -v "$PWD:/project:ro" --entrypoint python3 chatmail-runtime-toolchain \
+            -m unittest discover -s /project/tests -p 'test_*.py' -v
+      - name: Detect official sources and verify the pinned primary signer
+        run: |
+          docker run --rm --cpus 8 --memory 12g -v "$PWD:/project:ro" \
+            -v "$RUNNER_TEMP/intake:/intake" --entrypoint python3 chatmail-runtime-toolchain \
+            /project/scripts/upstream-candidate.py discover /project /intake/candidate
+      - name: Build the isolated source pair and run native suites
+        run: |
+          docker run --rm --network none --cpus 8 --memory 12g --pids-limit 1024 \
+            -e ARTIFACT_DIR=/artifacts -e UPSTREAM_INPUT_DIR=/inputs \
+            -v "$RUNNER_TEMP/intake/candidate/source:/project:ro" \
+            -v "$RUNNER_TEMP/intake/candidate/verified-downloads:/inputs:ro" \
+            -v "$RUNNER_TEMP/work:/work" -v "$RUNNER_TEMP/runtime:/artifacts" chatmail-runtime-toolchain
+      - name: Validate exact relay integration source
+        id: relay
+        env:
+          REQUESTED_RELAY_OID: ${{ inputs.relay_oid || vars.CHATMAIL_RUNTIME_RELAY_OID }}
+        run: |
+          if [[ ! "$REQUESTED_RELAY_OID" =~ ^[0-9a-f]{40}$ ]]; then
+            docker run --rm --network none -e ARTIFACT_DIR=/artifacts -v "$PWD:/project:ro" \
+              -v "$RUNNER_TEMP/runtime:/artifacts" --entrypoint python3 chatmail-runtime-toolchain \
+              /project/scripts/receipt.py event runtime24-relay-source unknown 'reviewed immutable relay integration OID absent'
+            printf '%s\n' 'Relay integration is unknown: configure a reviewed CHATMAIL_RUNTIME_RELAY_OID; no branch fallback.' >> "$GITHUB_STEP_SUMMARY"
+            exit 2
+          fi
+          printf 'oid=%s\n' "$REQUESTED_RELAY_OID" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: supere989/relay
+          ref: ${{ steps.relay.outputs.oid }}
+          path: relay-integration
+      - name: Prepare dependency-checked runtime lab
+        run: docker build --build-arg BASE=chatmail-runtime-toolchain -f Dockerfile.runtime-lab -t chatmail-runtime-lab .
+      - name: Real offline authentication, notification and storage regression
+        env:
+          EXPECTED_RELAY_OID: ${{ steps.relay.outputs.oid }}
+        run: |
+          docker run --rm --network none --cpus 8 --memory 12g --pids-limit 1024 \
+            -e ARTIFACT_DIR=/artifacts -e EXPECTED_RELAY_OID \
+            -v "$RUNNER_TEMP/intake/candidate/source:/project:ro" \
+            -v "$PWD/relay-integration:/relay:ro" -v "$RUNNER_TEMP/runtime:/artifacts" \
+            --entrypoint bash chatmail-runtime-lab /project/scripts/lab-runtime24.sh
+      - name: Bind security dispositions to the exact tested artifact
+        run: |
+          docker run --rm --network none \
+            -v "$RUNNER_TEMP/intake/candidate/source:/project:ro" \
+            -v "$PWD/relay-integration:/relay:ro" -v "$RUNNER_TEMP/runtime:/artifacts" \
+            --entrypoint python3 chatmail-runtime-lab /project/scripts/runtime-security-audit.py /project /artifacts
+      - name: Record separate candidate outcomes
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/intake/candidate/source/candidate-context.json" ]]; then
+            docker run --rm --network none -v "$PWD:/project:ro" \
+              -v "$RUNNER_TEMP/intake:/intake" -v "$RUNNER_TEMP/runtime:/artifacts" \
+              --entrypoint python3 chatmail-runtime-toolchain \
+              /project/scripts/upstream-candidate.py receipt /intake/candidate/source /artifacts /intake/candidate-status.json
+          fi
+          printf 'Promotion: false. This workflow publishes CI artifacts only.\n' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upstream-runtime-candidate-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/runtime/
+            ${{ runner.temp }}/intake/candidate-status.json
+            ${{ runner.temp }}/intake/build-ledger.jsonl
+            ${{ runner.temp }}/intake/build-status.json
+            ${{ runner.temp }}/intake/candidate/proposed-profile.json
+            ${{ runner.temp }}/intake/candidate/signature-evidence/
+            ${{ runner.temp }}/intake/candidate/source/candidate-context.json
+            ${{ runner.temp }}/intake/candidate/source/target.diff
+          if-no-files-found: warn
+# No release, tag, repository write, production mail or promotion operations.

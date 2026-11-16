@@ -1,0 +1,3 @@
+# Unified diff context uses a leading space, including before source tabs and
+# on blank context lines. Preserve the exact reviewed/tested patch bytes.
+patches/*.patch whitespace=-blank-at-eol,-space-before-tab

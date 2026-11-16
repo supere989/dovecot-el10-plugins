@@ -1,0 +1,11 @@
+--- a/src/lib-lua/dlua-compat.c
++++ b/src/lib-lua/dlua-compat.c
+@@ -1,1 +1,8 @@
+ #include "dlua-script-private.h"
++
++#if LUA_VERSION_NUM >= 503
++#define HAVE_LUA_ISINTEGER 1
++#endif
++#if LUA_VERSION_NUM >= 502
++#define HAVE_LUA_TOINTEGERX 1
++#endif
