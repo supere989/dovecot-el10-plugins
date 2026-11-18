@@ -1,9 +1,16 @@
 ARG BASE
 FROM ${BASE}
 # Prepare signed dependencies before the real test runs with --network none.
+# The control RPMs are pinned to the AlmaLinux 10.2 archive.
 RUN dnf -y --setopt=gpgcheck=1 install python3-requests python3-filelock python3-psutil python3-iniconfig python3-jinja2 openssl \
     && mkdir /lab-fixture \
-    && dnf download --destdir /lab-fixture dovecot-2.3.21-19.el10_2.8.x86_64 dovecot-pigeonhole-2.3.21-19.el10_2.8.x86_64 \
+    && fixture_base=https://vault.almalinux.org/10.2/AppStream/x86_64/os/Packages \
+    && curl --fail --location --silent --show-error --max-time 60 --proto '=https' --tlsv1.2 \
+       "$fixture_base/dovecot-2.3.21-19.el10_2.8.x86_64.rpm" \
+       -o /lab-fixture/dovecot-2.3.21-19.el10_2.8.x86_64.rpm \
+    && curl --fail --location --silent --show-error --max-time 60 --proto '=https' --tlsv1.2 \
+       "$fixture_base/dovecot-pigeonhole-2.3.21-19.el10_2.8.x86_64.rpm" \
+       -o /lab-fixture/dovecot-pigeonhole-2.3.21-19.el10_2.8.x86_64.rpm \
     && printf '%s\n' \
        'a0da375d5feaa8e62fd5caa6c49ff31d8a9ec152014af79e0412913d678dc211  /lab-fixture/dovecot-2.3.21-19.el10_2.8.x86_64.rpm' \
        'ad5c2245da1c84fef4a623d2a646adae50ab0bac6fe7e3849993cfa2d5ba67a4  /lab-fixture/dovecot-pigeonhole-2.3.21-19.el10_2.8.x86_64.rpm' | sha256sum -c - \
