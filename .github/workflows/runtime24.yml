@@ -28,17 +28,17 @@ jobs:
           mkdir -p "$RUNNER_TEMP/intake" "$RUNNER_TEMP/runtime" "$RUNNER_TEMP/work"
       - name: Contracts
         run: |
-          docker run --rm --network none --cpus 8 --memory 12g \
+          docker run --rm --network none --cpus 4 --memory 12g \
             -v "$PWD:/project:ro" --entrypoint python3 chatmail-runtime-toolchain \
             -m unittest discover -s /project/tests -p 'test_*.py' -v
       - name: Detect official sources and verify the pinned primary signer
         run: |
-          docker run --rm --cpus 8 --memory 12g -v "$PWD:/project:ro" \
+          docker run --rm --cpus 4 --memory 12g -v "$PWD:/project:ro" \
             -v "$RUNNER_TEMP/intake:/intake" --entrypoint python3 chatmail-runtime-toolchain \
             /project/scripts/upstream-candidate.py discover /project /intake/candidate
       - name: Build the isolated source pair and run native suites
         run: |
-          docker run --rm --network none --cpus 8 --memory 12g --pids-limit 1024 \
+          docker run --rm --network none --cpus 4 --memory 12g --pids-limit 1024 \
             -e ARTIFACT_DIR=/artifacts -e UPSTREAM_INPUT_DIR=/inputs \
             -v "$RUNNER_TEMP/intake/candidate/source:/project:ro" \
             -v "$RUNNER_TEMP/intake/candidate/verified-downloads:/inputs:ro" \
@@ -67,7 +67,7 @@ jobs:
         env:
           EXPECTED_RELAY_OID: ${{ steps.relay.outputs.oid }}
         run: |
-          docker run --rm --network none --cpus 8 --memory 12g --pids-limit 1024 \
+          docker run --rm --network none --cpus 4 --memory 12g --pids-limit 1024 \
             -e ARTIFACT_DIR=/artifacts -e EXPECTED_RELAY_OID \
             -v "$RUNNER_TEMP/intake/candidate/source:/project:ro" \
             -v "$PWD/relay-integration:/relay:ro" -v "$RUNNER_TEMP/runtime:/artifacts" \

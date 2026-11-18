@@ -32,7 +32,7 @@ jobs:
         run: docker build -t chatmail-alma-candidate .
       - name: Validate contracts
         run: |
-          docker run --rm --network none --cpus 8 --memory 12g \
+          docker run --rm --network none --cpus 4 --memory 12g \
             -v "$PWD:/project:ro" --entrypoint bash chatmail-alma-candidate \
             -c 'python3 -m unittest discover -s /project/tests -p "test_*.py" -v; rc=$?; exit "$rc"'
       - name: Discover and prepare a private vendor candidate
@@ -40,13 +40,13 @@ jobs:
           REQUESTED_DOVECOT_NVR: ${{ inputs.dovecot_nvr }}
         run: |
           mkdir -p "$RUNNER_TEMP/artifacts" "$RUNNER_TEMP/intake"
-          docker run --rm --cpus 8 --memory 12g \
+          docker run --rm --cpus 4 --memory 12g \
             -e "DOVECOT_NVR_ASSERTION=$REQUESTED_DOVECOT_NVR" -e ARTIFACT_DIR=/intake \
             -v "$PWD:/project:ro" -v "$RUNNER_TEMP/intake:/intake" \
             --entrypoint bash chatmail-alma-candidate /project/scripts/discover-candidate.sh
       - name: Build the exact detected candidate
         run: |
-          docker run --rm --cpus 8 --memory 12g --pids-limit 1024 \
+          docker run --rm --cpus 4 --memory 12g --pids-limit 1024 \
             -v "$RUNNER_TEMP/intake/source:/project:ro" -v "$RUNNER_TEMP/artifacts:/artifacts" \
             --entrypoint bash chatmail-alma-candidate \
             -c 'bash /project/scripts/check-target.sh && bash /project/scripts/entrypoint.sh'
@@ -54,7 +54,7 @@ jobs:
         run: |
           docker build --build-arg BASE=chatmail-alma-candidate \
             -f Dockerfile.lab -t chatmail-alma-runtime "$RUNNER_TEMP/artifacts"
-          docker run --rm --network none --cpus 8 --memory 12g --pids-limit 1024 \
+          docker run --rm --network none --cpus 4 --memory 12g --pids-limit 1024 \
             -e CHATMAIL_ISOLATED_LAB=1 \
             -v "$RUNNER_TEMP/intake/source:/project:ro" -v "$RUNNER_TEMP/artifacts:/artifacts" \
             --entrypoint bash chatmail-alma-runtime /project/scripts/lab-test.sh
