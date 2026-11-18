@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "profile": "upstream-2.4.5-alma10-x86_64",
+  "version": "2.4.5",
+  "architecture": "x86_64",
+  "prefix": "/opt/chatmail-dovecot/2.4.5",
+  "package_name": "chatmail-dovecot-runtime",
+  "package_release": "1.el10",
+  "dovecot_config_version": "2.4.5",
+  "dovecot_storage_version": "2.4.5",
+  "key_url": "https://dovecot.org/gpgkeys/DOVECOT-REPO-GPG-2.4",
+  "primary_fingerprint": "EF0882079FD4ED32BF8B23B2A1B09EF84EDC5219",
+  "inputs": [
+    {"component": "core", "name": "dovecot-2.4.5.tar.gz", "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz", "size": 8747733, "sha256": "868c2686a61b5f8e00a3e4721789b1ab46e6528fd773a5fbed07a6ecba7731e6"},
+    {"component": "pigeonhole", "name": "dovecot-pigeonhole-2.4.5.tar.gz", "url": "https://pigeonhole.dovecot.org/releases/2.4/dovecot-pigeonhole-2.4.5.tar.gz", "size": 2127811, "sha256": "ad7c478cb3aaa76c5f81f86727a3e6843645b0a1253f5684fb8a0beec0d22925"}
+  ],
+  "promotion": false
+}

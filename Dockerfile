@@ -1,13 +1,14 @@
-FROM almalinux:10
+FROM docker.io/almalinux:10.2
 
-RUN dnf -y update \
+RUN dnf -y install dnf-plugins-core \
+    && dnf config-manager --set-enabled crb \
     && dnf -y install \
       git \
       gcc gcc-c++ make \
       autoconf automake libtool \
       pkgconf-pkg-config \
       which findutils \
-      python3 \
+      python3 python3-pytest \
       openssl-devel \
       zlib-devel \
       bzip2-devel \
@@ -22,16 +23,10 @@ RUN dnf -y update \
       rpmdevtools \
       cpio \
       wget ca-certificates \
-      rpm-build \
+      rpm-build binutils patch diffutils shadow-utils util-linux \
     && dnf -y clean all
 
-WORKDIR /work
-
-# Directory where build artifacts will be written.
-RUN mkdir -p /artifacts/plugins
-
-COPY scripts/ /work/scripts/
-COPY rpm/ /work/rpm/
-RUN chmod +x /work/scripts/*.sh
-
-ENTRYPOINT ["/work/scripts/entrypoint.sh"]
+# Project-specific rootless devbox. Mount source read-only at /project,
+# keep build trees in /work, and write reviewable outputs to /artifacts.
+WORKDIR /project
+ENTRYPOINT ["bash", "/project/scripts/entrypoint.sh"]

@@ -1,0 +1,760 @@
+{
+  "schema_version": 1,
+  "profile": "upstream-2.4.5-alma10-x86_64",
+  "checked_at": "2026-11-16T09:08:44Z",
+  "fetch_status": "ok",
+  "qualification": "source-dispositions-only",
+  "scope": "All 25 CVEs in OXDC-ADV-2026-0003, plus the earlier CVE fixes recorded since the 2.3.21 baseline in the signed core/Pigeonhole NEWS files. This is not an exhaustive historical CVE catalog.",
+  "sources": [
+    {
+      "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+      "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+      "captured_at": "2026-11-16",
+      "kind": "unmodified-publisher-csaf",
+      "tracking_version": "4",
+      "publisher_release_date": "2026-08-28T00:00:00+00:00"
+    },
+    {
+      "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+      "sha256": "868c2686a61b5f8e00a3e4721789b1ab46e6528fd773a5fbed07a6ecba7731e6",
+      "captured_at": "2026-11-16T07:41:58Z",
+      "kind": "signature-verified-source-archive",
+      "component": "core",
+      "news_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0"
+    },
+    {
+      "url": "https://pigeonhole.dovecot.org/releases/2.4/dovecot-pigeonhole-2.4.5.tar.gz",
+      "sha256": "ad7c478cb3aaa76c5f81f86727a3e6843645b0a1253f5684fb8a0beec0d22925",
+      "captured_at": "2026-11-16T07:41:58Z",
+      "kind": "signature-verified-source-archive",
+      "component": "pigeonhole",
+      "news_sha256": "6816ec43156f2659274f282f4941fe66b7e43c3d7af91a47abddb3ffc3f265aa"
+    }
+  ],
+  "source_archives": {
+    "core": "868c2686a61b5f8e00a3e4721789b1ab46e6528fd773a5fbed07a6ecba7731e6",
+    "pigeonhole": "ad7c478cb3aaa76c5f81f86727a3e6843645b0a1253f5684fb8a0beec0d22925"
+  },
+  "source_signer": "EF0882079FD4ED32BF8B23B2A1B09EF84EDC5219",
+  "required_config": {
+    "dovecot_config_version": "2.4.5",
+    "dovecot_storage_version": "2.4.5"
+  },
+  "inventory": {
+    "package": "dovecot",
+    "required_ids": [
+      "CVE-2026-33263",
+      "CVE-2026-33607",
+      "CVE-2026-27852",
+      "CVE-2026-33606",
+      "CVE-2026-33604",
+      "CVE-2026-40014",
+      "CVE-2026-40013",
+      "CVE-2026-33605",
+      "CVE-2026-40018",
+      "CVE-2026-40019",
+      "CVE-2026-40015",
+      "CVE-2026-40017",
+      "CVE-2026-40203",
+      "CVE-2026-42007",
+      "CVE-2026-40204",
+      "CVE-2026-40205",
+      "CVE-2026-42008",
+      "CVE-2026-42395",
+      "CVE-2026-42393",
+      "CVE-2026-52681",
+      "CVE-2026-42392",
+      "CVE-2026-73208",
+      "CVE-2026-73209",
+      "CVE-2026-42391",
+      "CVE-2026-52687",
+      "CVE-2026-27851",
+      "CVE-2026-33603",
+      "CVE-2026-40020",
+      "CVE-2026-42006",
+      "CVE-2025-59028",
+      "CVE-2025-59031",
+      "CVE-2026-24031",
+      "CVE-2026-27859",
+      "CVE-2026-27860",
+      "CVE-2026-27857",
+      "CVE-2026-27856",
+      "CVE-2026-27855",
+      "CVE-2025-30189",
+      "CVE-2024-23184",
+      "CVE-2024-23185",
+      "CVE-2026-40016",
+      "CVE-2026-27858",
+      "CVE-2025-59032"
+    ],
+    "august_disclosure_ids": [
+      "CVE-2026-33263",
+      "CVE-2026-33607",
+      "CVE-2026-27852",
+      "CVE-2026-33606",
+      "CVE-2026-33604",
+      "CVE-2026-40014",
+      "CVE-2026-40013",
+      "CVE-2026-33605",
+      "CVE-2026-40018",
+      "CVE-2026-40019",
+      "CVE-2026-40015",
+      "CVE-2026-40017",
+      "CVE-2026-40203",
+      "CVE-2026-42007",
+      "CVE-2026-40204",
+      "CVE-2026-40205",
+      "CVE-2026-42008",
+      "CVE-2026-42395",
+      "CVE-2026-42393",
+      "CVE-2026-52681",
+      "CVE-2026-42392",
+      "CVE-2026-73208",
+      "CVE-2026-73209",
+      "CVE-2026-42391",
+      "CVE-2026-52687"
+    ],
+    "earlier_release_history_ids": [
+      "CVE-2026-27851",
+      "CVE-2026-33603",
+      "CVE-2026-40020",
+      "CVE-2026-42006",
+      "CVE-2025-59028",
+      "CVE-2025-59031",
+      "CVE-2026-24031",
+      "CVE-2026-27859",
+      "CVE-2026-27860",
+      "CVE-2026-27857",
+      "CVE-2026-27856",
+      "CVE-2026-27855",
+      "CVE-2025-30189",
+      "CVE-2024-23184",
+      "CVE-2024-23185",
+      "CVE-2026-40016",
+      "CVE-2026-27858",
+      "CVE-2025-59032"
+    ]
+  },
+  "interpretation_notes": [
+    "CVE identifiers and publisher product-status facts are independently recorded here. The original CSAF artifact is retained unmodified; this file is not a modified copy of the advisory.",
+    "NEWS contains a malformed CVE-2026-4200 label; the authoritative CSAF CVE-2026-42008 identifier is retained.",
+    "The initial CVE-2026-27857 fix was incomplete; CVE-2026-42006 is also inventoried. CVE-2026-42393 follows the earlier doveadm timing fix CVE-2026-27856.",
+    "Pigeonhole source, core source, explicit configuration, final native test receipts, real relay harness receipts, and final artifact digest linkage are separate requirements. No source disposition enables promotion."
+  ],
+  "advisories": [
+    {
+      "id": "CVE-2026-33263",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/0/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-33607",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/1/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27852",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/2/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-33606",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/3/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-33604",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/4/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40014",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/5/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40013",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/6/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-33605",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/7/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40018",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/8/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40019",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/9/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40015",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/10/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40017",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher marks CE 2.4.5 fixed, but the keyed v2 thread-index format is selected only with dovecot_storage_version >= 2.4.5. The selected profile requires exactly 2.4.5 and a real mail-state transition receipt; executable version alone is insufficient.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/11/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        },
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "path_or_boundary": "src/lib-master/storage-version.h: storage_version_has_mail_index_strmap_v2",
+          "file_sha256": "ed249f65bbe4c617f6349b6a7a9208cea34e1d5eae5ffe720b9dc715abf8dd20"
+        },
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "path_or_boundary": "src/lib-storage/index/index-thread.c: index_thread_mailbox_opened",
+          "file_sha256": "843cf4a6fc90d7e176340c7fafadc8f81085cc74177fe31bd481f3985a8bd63d"
+        },
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "path_or_boundary": "src/lib-index/mail-index-strmap.c: format selection and v1 rebuild",
+          "file_sha256": "00f851296744875a3737f7daa3a40c68914475aab9da195dc40b86e477e3ce33"
+        }
+      ],
+      "required_config": {
+        "dovecot_storage_version": "2.4.5"
+      }
+    },
+    {
+      "id": "CVE-2026-40203",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/12/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        },
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "path_or_boundary": "src/imap/imap-client.c: client_default_send_tagline",
+          "file_sha256": "6ef78544736bdfb8e8ee36ece8cdc2c2e95ef0fd3c4072332ad73a03c67d18a2"
+        },
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "path_or_boundary": "src/lib-compression/ostream-zlib.c: o_stream_deflate_reset_dict and Z_FULL_FLUSH",
+          "file_sha256": "fa9367903ed8edd22bd312d1dd812c2f52d4eedfc04c8851b7443fc340a1ea28"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42007",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/13/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40204",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/14/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40205",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/15/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42008",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/16/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42395",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/17/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42393",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/18/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-52681",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/19/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42392",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/20/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-73208",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/21/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-73209",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/22/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42391",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/23/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-52687",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The publisher explicitly lists OXDC-CE_2.4.5 as first_fixed. This is a source disposition for the exact signed 2.4.5 runtime, not an artifact or production qualification.",
+      "source_evidence": [
+        {
+          "url": "https://documentation.open-xchange.com/dovecot/security/advisories/csaf/2026/oxdc-adv-2026-0003.json",
+          "sha256": "cdb26d897af126e37a07006f87bc62c2688579e521377272c0516d134eb4dfac",
+          "path_or_boundary": "/vulnerabilities/24/product_status/first_fixed",
+          "product_id": "OXDC-CE_2.4.5"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27851",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.4; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.4 entry for CVE-2026-27851"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-33603",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.4; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.4 entry for CVE-2026-33603"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40020",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.4; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.4 entry for CVE-2026-40020"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-42006",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.4; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.4 entry for CVE-2026-42006"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-59028",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2025-59028"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-59031",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2025-59031"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-24031",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-24031"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27859",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27859"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27860",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27860"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27857",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27857"
+        }
+      ],
+      "superseded_fix": "CVE-2026-42006"
+    },
+    {
+      "id": "CVE-2026-27856",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27856"
+        }
+      ],
+      "superseded_fix": "CVE-2026-42393"
+    },
+    {
+      "id": "CVE-2026-27855",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27855"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-30189",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.4.2; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.4.2 entry for CVE-2025-30189"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-23184",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.3.21.1; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.3.21.1 entry for CVE-2024-23184"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-23185",
+      "claim": "fixed",
+      "component": "core",
+      "reason": "The NEWS file within the verified signed core 2.4.5 archive records this fix in release 2.3.21.1; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://dovecot.org/releases/2.4/dovecot-2.4.5.tar.gz",
+          "file_sha256": "49854a1a7e68c6d744cac68166bf1e8bc27a20fdd0eb83ef3f26277d6e70d0b0",
+          "path_or_boundary": "NEWS: v2.3.21.1 entry for CVE-2024-23185"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-40016",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The NEWS file within the verified signed pigeonhole 2.4.5 archive records this fix in release 2.4.4; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://pigeonhole.dovecot.org/releases/2.4/dovecot-pigeonhole-2.4.5.tar.gz",
+          "file_sha256": "6816ec43156f2659274f282f4941fe66b7e43c3d7af91a47abddb3ffc3f265aa",
+          "path_or_boundary": "NEWS: v2.4.4 entry for CVE-2026-40016"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-27858",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The NEWS file within the verified signed pigeonhole 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://pigeonhole.dovecot.org/releases/2.4/dovecot-pigeonhole-2.4.5.tar.gz",
+          "file_sha256": "6816ec43156f2659274f282f4941fe66b7e43c3d7af91a47abddb3ffc3f265aa",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2026-27858"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-59032",
+      "claim": "fixed",
+      "component": "pigeonhole",
+      "reason": "The NEWS file within the verified signed pigeonhole 2.4.5 archive records this fix in release 2.4.3; the selected source contains that release history. This does not replace final build or runtime qualification.",
+      "source_evidence": [
+        {
+          "url": "https://pigeonhole.dovecot.org/releases/2.4/dovecot-pigeonhole-2.4.5.tar.gz",
+          "file_sha256": "6816ec43156f2659274f282f4941fe66b7e43c3d7af91a47abddb3ffc3f265aa",
+          "path_or_boundary": "NEWS: v2.4.3 entry for CVE-2025-59032"
+        }
+      ]
+    }
+  ]
+}

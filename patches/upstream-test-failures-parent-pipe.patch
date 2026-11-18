@@ -1,0 +1,15 @@
+From: Dovecot upstream test fix
+Source: https://github.com/dovecot/core/commit/28dc4ced1c103053391ef9b4bfc39d22610dc96f
+Scope: test code only; close the parent's unused pipe writer after fork.
+
+--- a/src/lib/test-failures.c
++++ b/src/lib/test-failures.c
+@@ -132,7 +132,7 @@ static void test_internal_split(void)
+ 		ctx.log_prefix = "";
+ 		i_log_type(&ctx, "%s", long_lext);
+ 		test_exit(0);
+-	case 1:
++	default:
+ 		/* parent - log reader */
+ 		i_close_fd(&fd[1]);
+ 		break;

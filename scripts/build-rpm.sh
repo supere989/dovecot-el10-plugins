@@ -1,48 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-# Builds an RPM that installs only the missing Dovecot Lua plugin .so files.
-# This script is intended to be run INSIDE the Docker build container after
-# build-plugins.sh has produced /artifacts/plugins/*.so
-
-RPMTOP="${RPMTOP:-/work/rpm}"
-ARTIFACT_PLUGINS_DIR="${ARTIFACT_PLUGINS_DIR:-/artifacts/plugins}"
-SPEC="${SPEC:-${RPMTOP}/SPECS/dovecot-el10-lua-plugins.spec}"
-
-# Parse DOVECOT_NVR (e.g. "dovecot-2.3.21-16.el10") into version + release
-DOVECOT_NVR="${DOVECOT_NVR:-dovecot-2.3.21-16.el10}"
-NVR_STRIPPED="${DOVECOT_NVR#dovecot-}"
-DOVE_VERSION=$(echo "${NVR_STRIPPED}" | cut -d'-' -f1)
-DOVE_RELEASE=$(echo "${NVR_STRIPPED}" | cut -d'-' -f2-)
-
-echo "Building RPM for Dovecot ${DOVE_VERSION}-${DOVE_RELEASE}"
-
-mkdir -p "${RPMTOP}/SOURCES/plugins"
-
+source "$(dirname -- "$0")/common.sh"
+require_container
+CURRENT_STAGE=package
+RPMTOP=$(mktemp -d /work/chatmail-rpm.XXXXXX)
+mkdir -p "${RPMTOP}/SOURCES/plugins" "${RPMTOP}/SPECS" "${ARTIFACT_DIR}/rpms"
+for name in lib01_mail_lua_plugin.so lib20_push_notification_plugin.so lib22_push_notification_lua_plugin.so libauthdb_lua.so libdovecot-lua.so.0.0.0 libdovecot-storage-lua.so.0.0.0; do
+  cp "${ARTIFACT_DIR}/plugins/${name}" "${RPMTOP}/SOURCES/plugins/${name}"
+done
+cp "${PROJECT_DIR}/rpm/SPECS/dovecot-el10-lua-plugins.spec" "${RPMTOP}/SPECS/"
+cp "${PROJECT_DIR}/examples/99-chatmail-lua.conf" "${RPMTOP}/SOURCES/"
+rpmbuild --define "_topdir ${RPMTOP}" --define "dovecot_version ${DOVE_VERSION}" \
+  --define "dovecot_release ${DOVE_RELEASE}" --define "dovecot_epoch ${DOVECOT_EPOCH}" \
+  -bb "${RPMTOP}/SPECS/dovecot-el10-lua-plugins.spec"
 shopt -s nullglob
-plugins=("${ARTIFACT_PLUGINS_DIR}"/*.so*)
-if (( ${#plugins[@]} == 0 )); then
-  echo "No plugin .so artifacts found in ${ARTIFACT_PLUGINS_DIR}" >&2
-  exit 1
-fi
-cp -a --no-preserve=ownership "${plugins[@]}" "${RPMTOP}/SOURCES/plugins/"
-
-if ! command -v rpmbuild >/dev/null 2>&1; then
-  echo "rpmbuild not found; install rpm-build" >&2
-  exit 1
-fi
-
-# Allow build-path RPATHs in plugin .so files compiled from a SRPM BUILD tree
-export QA_RPATHS=$(( 0x0002 ))
-
-rpmbuild \
-  --define "_topdir ${RPMTOP}" \
-  --define "dovecot_version ${DOVE_VERSION}" \
-  --define "dovecot_release ${DOVE_RELEASE}" \
-  -bb "${SPEC}"
-
-mkdir -p /artifacts/rpms
-cp -a --no-preserve=ownership "${RPMTOP}/RPMS"/*/*.rpm /artifacts/rpms/
-
-echo "Built RPMs:"
-ls -la /artifacts/rpms || true
+rpms=("${RPMTOP}/RPMS/${TARGET_ARCH}/"*.rpm)
+[[ ${#rpms[@]} == 1 ]] || reject 'expected one addon RPM'
+cp "${rpms[0]}" "${ARTIFACT_DIR}/rpms/"
+stage package ok 'exact core dependency; private LMTP modules; no package scriptlets'

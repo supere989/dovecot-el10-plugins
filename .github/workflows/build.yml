@@ -1,157 +1,73 @@
-name: build
+name: candidate-build
 
 on:
   workflow_dispatch:
     inputs:
       dovecot_nvr:
-        description: 'Dovecot NVR to build against (e.g. dovecot-2.3.21-16.el10). Leave blank to auto-detect.'
+        description: 'Optional assertion; must equal the structured vendor candidate (never selects an arbitrary release)'
         required: false
         default: ''
   push:
-    branches:
-      - main
-    tags:
-      - 'dovecot-*'
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     - cron: '0 3 * * *'
 
+permissions:
+  contents: read
+
 concurrency:
-  group: build-${{ github.ref }}
+  group: candidate-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  detect-version:
+  candidate:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    outputs:
-      dovecot_nvr: ${{ steps.detect.outputs.dovecot_nvr }}
-      tag: ${{ steps.detect.outputs.tag }}
-      should_build: ${{ steps.detect.outputs.should_build }}
+    timeout-minutes: 60
     steps:
-      - name: Detect Dovecot NVR
-        id: detect
+      - uses: actions/checkout@v4
+      - name: Build isolated Alma toolchain
+        run: docker build -t chatmail-alma-candidate .
+      - name: Validate contracts
+        run: |
+          docker run --rm --network none --cpus 4 --memory 12g \
+            -v "$PWD:/project:ro" --entrypoint bash chatmail-alma-candidate \
+            -c 'python3 -m unittest discover -s /project/tests -p "test_*.py" -v; rc=$?; exit "$rc"'
+      - name: Discover and prepare a private vendor candidate
         env:
-          GH_TOKEN: ${{ github.token }}
+          REQUESTED_DOVECOT_NVR: ${{ inputs.dovecot_nvr }}
         run: |
-          set -euo pipefail
-
-          if [[ -n "${{ github.event.inputs.dovecot_nvr }}" ]]; then
-            NVR="${{ github.event.inputs.dovecot_nvr }}"
-          elif [[ "${{ github.ref }}" == refs/tags/dovecot-* ]]; then
-            NVR="${{ github.ref_name }}"
-            NVR="${NVR#dovecot-}"
-          else
-            echo "Querying AlmaLinux 10 appstream for current Dovecot version..."
-            RAW=$(docker run --rm almalinux:10 bash -c \
-              "dnf -q list dovecot 2>/dev/null | awk 'NR>1{print \$2}' | head -1")
-            # RAW looks like "1:2.3.21-16.el10_1.1" — strip epoch
-            NVR="dovecot-$(echo "${RAW}" | sed 's/^[0-9]*://')"
-            echo "Detected: ${NVR}"
-          fi
-
-          TAG="dovecot-${NVR#dovecot-}"
-          echo "dovecot_nvr=${NVR}" | tee -a "${GITHUB_OUTPUT}"
-          echo "tag=${TAG}"         | tee -a "${GITHUB_OUTPUT}"
-
-          # On scheduled runs, skip if a release for this exact tag already exists
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
-            if [[ "${STATUS}" == "200" ]]; then
-              echo "Release ${TAG} already exists — skipping."
-              echo "should_build=false" | tee -a "${GITHUB_OUTPUT}"
-              exit 0
-            fi
-          fi
-          echo "should_build=true" | tee -a "${GITHUB_OUTPUT}"
-
-  build:
-    needs: detect-version
-    if: needs.detect-version.outputs.should_build == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Show runner info
+          mkdir -p "$RUNNER_TEMP/artifacts" "$RUNNER_TEMP/intake"
+          docker run --rm --cpus 4 --memory 12g \
+            -e "DOVECOT_NVR_ASSERTION=$REQUESTED_DOVECOT_NVR" -e ARTIFACT_DIR=/intake \
+            -v "$PWD:/project:ro" -v "$RUNNER_TEMP/intake:/intake" \
+            --entrypoint bash chatmail-alma-candidate /project/scripts/discover-candidate.sh
+      - name: Build the exact detected candidate
         run: |
-          uname -a
-          docker version
-
-      - name: Build Docker image
-        run: docker build -t dovecot-el10-lua-plugins:ci .
-
-      - name: Build artifacts in container
+          docker run --rm --cpus 4 --memory 12g --pids-limit 1024 \
+            -v "$RUNNER_TEMP/intake/source:/project:ro" -v "$RUNNER_TEMP/artifacts:/artifacts" \
+            --entrypoint bash chatmail-alma-candidate \
+            -c 'bash /project/scripts/check-target.sh && bash /project/scripts/entrypoint.sh'
+      - name: Exercise private Lua modules and notification handoff
         run: |
-          set -euo pipefail
-          ARTIFACTS_DIR="${RUNNER_TEMP}/artifacts"
-          mkdir -p "${ARTIFACTS_DIR}"
-
-          docker run --rm \
-            -e "DOVECOT_NVR=${{ needs.detect-version.outputs.dovecot_nvr }}" \
-            -v "${ARTIFACTS_DIR}:/artifacts" \
-            dovecot-el10-lua-plugins:ci
-
-          sudo chown -R "$(id -u):$(id -g)" "${ARTIFACTS_DIR}"
-
-      - name: Smoke check artifacts
-        run: |
-          set -euo pipefail
-          ARTIFACTS_DIR="${RUNNER_TEMP}/artifacts"
-
-          echo "== artifacts =="
-          find "${ARTIFACTS_DIR}" -maxdepth 4 -type f | sort
-
-          find "${ARTIFACTS_DIR}" -name '*push_notification*plugin.so*' | grep -q . \
-            || { echo "Missing push_notification plugin" >&2; exit 1; }
-          find "${ARTIFACTS_DIR}" -name '*mail*lua*plugin.so*' | grep -q . \
-            || { echo "Missing mail_lua plugin" >&2; exit 1; }
-          find "${ARTIFACTS_DIR}" -name 'libdovecot-lua.so*' | grep -q . \
-            || { echo "Missing libdovecot-lua" >&2; exit 1; }
-          find "${ARTIFACTS_DIR}" -name '*.rpm' | grep -q . \
-            || { echo "Missing RPM" >&2; exit 1; }
-
-      - name: Upload artifacts
+          docker build --build-arg BASE=chatmail-alma-candidate \
+            -f Dockerfile.lab -t chatmail-alma-runtime "$RUNNER_TEMP/artifacts"
+          docker run --rm --network none --cpus 4 --memory 12g --pids-limit 1024 \
+            -e CHATMAIL_ISOLATED_LAB=1 \
+            -v "$RUNNER_TEMP/intake/source:/project:ro" -v "$RUNNER_TEMP/artifacts:/artifacts" \
+            --entrypoint bash chatmail-alma-runtime /project/scripts/lab-test.sh
+      - name: Preserve candidate and audit evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: artifacts
-          path: ${{ runner.temp }}/artifacts/
-          if-no-files-found: error
+          name: chatmail-alma-candidate-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/artifacts/
+            ${{ runner.temp }}/intake/
+          if-no-files-found: warn
 
-  release:
-    needs: [detect-version, build]
-    if: >
-      needs.build.result == 'success' && (
-        startsWith(github.ref, 'refs/tags/dovecot-') ||
-        github.event_name == 'schedule' ||
-        github.event_name == 'workflow_dispatch'
-      )
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts
-          path: artifacts
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.detect-version.outputs.tag }}
-          name: ${{ needs.detect-version.outputs.tag }}
-          body: |
-            Dovecot Lua + push-notification plugins built against `${{ needs.detect-version.outputs.dovecot_nvr }}` on AlmaLinux 10.
-
-            **Install on delta:**
-            ```bash
-            sudo /usr/local/bin/dovecot-upgrade.sh
-            ```
-          files: |
-            artifacts/rpms/*.rpm
-            artifacts/plugins/*.so*
+# Deliberately no release job, tag trigger, write permission or production
+# updater invocation. The deployed timer consumes the old dovecot-* releases;
+# migration and manual promotion must precede any publication in that channel.

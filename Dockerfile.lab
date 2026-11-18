@@ -1,0 +1,9 @@
+ARG BASE
+FROM ${BASE}
+# Install only signed, exact candidate core/Pigeonhole inputs during preparation.
+# The subsequent regression container runs with --network none.
+COPY runtime/ /lab-runtime/
+RUN rpmkeys --checksig /lab-runtime/*.rpm \
+    && dnf -y install /lab-runtime/*.rpm \
+    && dnf -y clean all
+ENV CHATMAIL_LAB_PREPARED=1

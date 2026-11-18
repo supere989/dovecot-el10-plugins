@@ -1,0 +1,20 @@
+From: Chatmail native-runtime test harness correction
+Scope: test code only; initialize the process-title API exercised by log
+backpressure. The original nonblocking pipe and every assertion remain intact.
+Evidence: the uninitialized EAGAIN path panicked in process_title_set() and
+the child's exit cleanup removed the parent's shared test directory.
+
+--- a/src/lib/test-lib.c
++++ b/src/lib/test-lib.c
+@@ -1,9 +1,11 @@
+ /* Copyright (c) Dovecot authors, see top-level COPYING file */
+ 
+ #include "test-lib.h"
++#include "process-title.h"
+ 
+ int main(int argc, char **argv)
+ {
++	process_title_init(argc, &argv);
+ 	const char *match = "";
+ 	if (argc > 2 && strcmp(argv[1], "--match") == 0)
+ 		match = argv[2];

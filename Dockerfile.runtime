@@ -1,0 +1,18 @@
+ARG BASE=localhost/dovecot-el10-lab:20261115
+FROM ${BASE}
+RUN dnf -y install gnupg2 libzstd-devel libxcrypt-devel systemd-devel libicu-devel pcre2-devel util-linux \
+    && dnf -y clean all
+# Native Lua HTTP tests require the real JSON parser (and LPeg), not a shim.
+# EPEL10 primary: 7D8D15CBFC4E62688591FB2633D98517E37ED158.
+RUN curl --fail --location --max-time 30 https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-10 -o /tmp/epel-public-key \
+    && test "$(gpg --show-keys --with-colons /tmp/epel-public-key | awk -F: '$1 == "fpr" { print $10; exit }')" = 7D8D15CBFC4E62688591FB2633D98517E37ED158 \
+    && rpmkeys --import /tmp/epel-public-key \
+    && dnf -y --setopt=localpkg_gpgcheck=1 install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm \
+    && test "$(rpm -q --qf '%{VERSION}-%{RELEASE}' epel-release)" = 10-9.el10_3 \
+    && rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-10 \
+    && dnf -y --setopt=gpgcheck=1 --setopt=localpkg_gpgcheck=1 install lua-json-1.3.4-8.el10_0 lua-lpeg-1.1.0-4.el10_0 \
+    && rpm -V lua-json lua-lpeg \
+    && lua -e 'assert(require("json"))' \
+    && dnf -y clean all
+WORKDIR /project
+ENTRYPOINT ["bash", "/project/scripts/build-runtime.sh"]
